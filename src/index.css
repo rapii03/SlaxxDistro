@@ -1,0 +1,31 @@
+/* font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+/* font */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Menyesuaikan warna latar belakang dan lebar scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Warna track scrollbar */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Warna thumb scrollbar */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Menghilangkan tombol panah scrollbar */
+::-webkit-scrollbar-button {
+  display: none;
+}

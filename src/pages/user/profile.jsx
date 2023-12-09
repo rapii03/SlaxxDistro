@@ -1,6 +1,7 @@
 import Navbar2 from "../../Components/user/Navbar";
 import { useState } from "react";
 ("use client");
+import axios from 'axios';
 
 import { Label, TextInput } from "flowbite-react";
 import Footer2 from "../../Components/user/Footer";
@@ -8,30 +9,57 @@ const Profile = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true); // Track password matching
 
-  const handleProfile = (event) => {
-    // Prevent the default form submission behavior
+  const handleProfile = async (event) => {
     event.preventDefault();
 
-    // Check if passwords match before opening the profile modal
     if (checkPasswordsMatch()) {
-      setIsProfileModalOpen(true);
+      const name = document.getElementById("name").value;
+      const telepon = document.getElementById("telepon").value;
+      const email = document.getElementById("email1").value;
+      const address = document.getElementById("address").value;
+      const currentPassword = document.getElementById("password").value;
+      const newPassword = document.getElementById("newPassword").value;
+      console.log("Data to be sent to backend:", {
+        name,
+        telepon,
+        email,
+        address,
+        currentPassword,
+        newPassword,
+      });
+      try {
+        const response = await axios.post('/api/profile', {
+          name,
+          telepon,
+          email,
+          address,
+          currentPassword,
+          newPassword,
+        });
 
-      // Reset the form by setting new values or clearing the fields
-      document.getElementById("name").value = "";
-      document.getElementById("telepon").value = "";
-      document.getElementById("email1").value = "";
-      document.getElementById("address").value = "";
-      document.getElementById("password").value = "";
-      document.getElementById("newPassword").value = "";
-      document.getElementById("confirmPassword").value = "";
+        if (response.data.success) {
+          setIsProfileModalOpen(true);
 
-      // Reset the password matching status
-      setPasswordsMatch(true);
+          document.getElementById("name").value = "";
+          document.getElementById("telepon").value = "";
+          document.getElementById("email1").value = "";
+          document.getElementById("address").value = "";
+          document.getElementById("password").value = "";
+          document.getElementById("newPassword").value = "";
+          document.getElementById("confirmPassword").value = "";
+
+          setPasswordsMatch(true);
+        } else {
+          console.error(response.data.error);
+        }
+      } catch (error) {
+        console.error(error);
+      }
     } else {
-      // Passwords don't match, display notification
       setPasswordsMatch(false);
     }
   };
+
   const checkPasswordsMatch = () => {
     // Compare the values of new password and confirm password
     const newPassword = document.getElementById("newPassword").value;
@@ -181,7 +209,7 @@ const Profile = () => {
               </svg>
             </div>
             <p className="text-center  text-[14px]">
-            Changes saved successfully
+              Changes saved successfully
 
             </p>
             <div className="btn flex justify-center">

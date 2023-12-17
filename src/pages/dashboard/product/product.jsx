@@ -10,18 +10,22 @@ import { Button, Modal } from 'flowbite-react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
 function product() {
-    const [products, setProducts] = useState([
-        { id: 1, name: 'Gitar Akustik', price: '55000000', stock: 10 },
-        { id: 2, name: 'Gitar Akustik', price: '55000000', stock: 10 },
-        { id: 3, name: 'Gitar Akustik', price: '55000000', stock: 10 },
-        { id: 4, name: 'Gitar Akustik', price: '55000000', stock: 10 },
-        { id: 5, name: 'Gitar Akustik', price: '55000000', stock: 10 },
-        { id: 6, name: 'Gitar Akustik', price: '55000000', stock: 10 },
+    const [originalProducts, setOriginalProducts] = useState([
+        { id: 1, name: 'Gitar Akustik 1', price: '55000000', stock: 10 },
+        { id: 2, name: 'Gitar Akustik 2', price: '56000000', stock: 11 },
+        { id: 3, name: 'Gitar Akustik 3', price: '57000000', stock: 12 },
+        { id: 4, name: 'Gitar Akustik 4', price: '58000000', stock: 13 },
+        { id: 5, name: 'Gitar Akustik 5', price: '59000000', stock: 14 },
+        { id: 6, name: 'Gitar Akustik 6', price: '60000000', stock: 15 },
     ]);
+
+    const [products, setProducts] = useState(originalProducts);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         axios.get('YOUR_BACKEND_API_ENDPOINT')
             .then(response => {
+                setOriginalProducts(response.data);
                 setProducts(response.data);
             })
             .catch(error => {
@@ -40,20 +44,40 @@ function product() {
 
     const [openModal, setOpenModal] = useState(false);
 
+    const handleSearch = () => {
+        const filteredProducts = originalProducts.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        setProducts(filteredProducts);
+    };
+
+    useEffect(() => {
+        handleSearch();
+    }, [searchTerm]);
+
     return (
         <>
             <Sidebar>
                 <div className="flex flex-col p-4 rounded shadow-lg h-full">
                     <p className="text-4xl text-[#739072] font-bold">Product</p>
-                    <div className="flex justify-end mt-20 mb-6">
-                        <button className="">
-                            <a
-                                className="flex justify-center py-2 item-center w-40 h-9 bg-[#739072] hover:bg-[#394939] focus:ring-4 focus:ring-[#937af9] text-white rounded-lg  text-sm"
-                                href="/add-product"
-                            >
-                                Add Product
-                            </a>
-                        </button>
+                    <div className='flex justify-between mt-20 mb-6'>
+                        <div className=''>
+                            <input
+                                className="shadow appearance-none border rounded w-64 py-2 px-3 text-[#739072] leading-tight focus:outline-none focus:shadow-outline focus:ring-[#937af9]"
+                                type="text"
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div className="">
+                            <button className="">
+                                <a
+                                    className="flex justify-center py-2 item-center w-40 h-9 bg-[#739072] hover:bg-[#394939] focus:ring-4 focus:ring-[#937af9] text-white rounded-lg  text-sm"
+                                    href="/add-product"
+                                >
+                                    Add Product
+                                </a>
+                            </button>
+                        </div>
                     </div>
                     <table className="overflow-hidden rounded text-sm text-left text-black w-full">
                         <thead className="text-xs text-[#739072] uppercase bg-[#D2D2D2]">

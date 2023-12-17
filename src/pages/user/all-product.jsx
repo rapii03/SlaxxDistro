@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Footer2 from "../../Components/user/Footer";
 import Navbar2 from "../../Components/user/Navbar";
 import Search from "../../Components/user/Search";
@@ -5,77 +6,28 @@ import Search from "../../Components/user/Search";
 const products = [
   {
     id: "1",
-    name: "Celana Jeans",
+    name: "Celana",
     price: 175000,
     stock: "36",
     image: "/Images/product1.png",
   },
   {
     id: "2",
-    name: "Celana Jeans",
+    name: "Kaos",
     price: 175000,
     stock: "36",
     image: "/Images/product1.png",
   },
   {
     id: "3",
-    name: "Celana Jeans",
+    name: "Topi",
     price: 175000,
     stock: "36",
     image: "/Images/product1.png",
   },
   {
     id: "4",
-    name: "Celana Jeans",
-    price: 175000,
-    stock: "36",
-    image: "/Images/product1.png",
-  },
-  {
-    id: "5",
-    name: "Celana Jeans",
-    price: 175000,
-    stock: "36",
-    image: "/Images/product1.png",
-  },
-  {
-    id: "6",
-    name: "Celana Jeans",
-    price: 175000,
-    stock: "36",
-    image: "/Images/product1.png",
-  },
-  {
-    id: "7",
-    name: "Celana Jeans",
-    price: 175000,
-    stock: "36",
-    image: "/Images/product1.png",
-  },
-  {
-    id: "8",
-    name: "Celana Jeans",
-    price: 175000,
-    stock: "36",
-    image: "/Images/product1.png",
-  },
-  {
-    id: "9",
-    name: "Celana Jeans",
-    price: 175000,
-    stock: "36",
-    image: "/Images/product1.png",
-  },
-  {
-    id: "10",
-    name: "Celana Jeans",
-    price: 175000,
-    stock: "36",
-    image: "/Images/product1.png",
-  },
-  {
-    id: "10",
-    name: "Celana Jeans",
+    name: "Sepatu",
     price: 175000,
     stock: "36",
     image: "/Images/product1.png",
@@ -83,6 +35,10 @@ const products = [
 ];
 
 const AllProduct = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   const handleProduk = (event, product) => {
     event.preventDefault();
 
@@ -107,6 +63,10 @@ const AllProduct = () => {
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
   };
 
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+  };
+
   return (
     <div>
       <Navbar2 />
@@ -119,13 +79,14 @@ const AllProduct = () => {
           </div>
           <div className="search flex justify-end mb-4">
             <div className=" w-full lg:w-[400px]">
-              <Search />
+            <Search onSearchChange={handleSearchChange} />
             </div>
           </div>
           <div className="wrap-card gap-5 grid grid-cols-10  h-[800px] overflow-y-auto">
-            {products.map((product) => (
+          {filteredProducts.map((product) => (
               <form
-                key={product.id} onSubmit={(event) => handleProduk(event, product)}
+                key={product.id}
+                onSubmit={(event) => handleProduk(event, product)}
                 className="card bg-white flex flex-col gap-2 col-span-5 lg:col-span-2 h-[260px] rounded-[5px] overflow-hidden p-3 shadow-lg"
               >
                 <div className="img h-[150px]  rounded-[3px] overflow-hidden">
@@ -143,7 +104,10 @@ const AllProduct = () => {
                     </div>
                     <div className="stok">{product.stock} Pcs</div>
                   </div>
-                  <button type="submit" className="btn w-full p-2 bg-primary rounded text-[11px] text-white font-semibold text-center hover:bg-[#1B471F]">
+                  <button
+                    type="submit"
+                    className="btn w-full p-2 bg-primary rounded text-[11px] text-white font-semibold text-center hover:bg-[#1B471F]"
+                  >
                     Add to Cart
                   </button>
                 </div>

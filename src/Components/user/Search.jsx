@@ -1,10 +1,22 @@
-const Search = () => {
+import { useState } from 'react';
+
+const Search = ({ onSearchChange }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleInputChange = (event) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+    onSearchChange(query); 
+  };
+
   return (
     <div className="relative h-full">
-      <input
+        <input
         type="text"
         placeholder="Search Product"
-        className="text-[14px] placeholder:text-primary rounded-md w-full h-full  pl-10 pr-4 py-[5px] border focus:ring-primary focus:border-primary border-primary"
+        value={searchQuery}
+        onChange={handleInputChange}
+        className="text-[14px] placeholder:text-primary rounded-md w-full h-full pl-10 pr-4 py-[5px] border focus:ring-primary focus:border-primary border-primary"
       />
       <div className="absolute inset-y-0 left-0 flex items-center pl-3">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -20,6 +20,7 @@ import EditProduct from './pages/dashboard/product/edit-product'
 import DetailOrder from './pages/dashboard/order/detail-order'
 import AddUser from './pages/dashboard/user/add-user'
 import EditUser from './pages/dashboard/user/edit-user'
+import Shipping from './pages/user/shipping.jsx'
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: "/cart",
     element: <Cart />
+  },
+  {
+    path: "/shipping",
+    element: <Shipping />
   },
   {
     path: "/profile",

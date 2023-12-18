@@ -4,12 +4,34 @@ import { Alert } from 'flowbite-react';
 import Input from '../../../Components/dashboard/Input';
 import { HiInformationCircle } from 'react-icons/hi';
 import axios from 'axios';
+import useSWR from 'swr';
+import { axiosInstance } from '../../../utils/useAxios';
+import { useNavigate } from 'react-router-dom';
 
 function login() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertSuccess, setAlertSuccess] = useState(false);
+
+    let users = [];
+
+    const { data, error, isLoading } = useSWR(`/user`, (url) =>
+        axiosInstance
+        .get(url, {
+            headers: {
+            "ngrok-skip-browser-warning": "69420",
+            },
+        })
+        .then((res) => res.data)
+    );
+
+    data?.map((item) => {
+        users.push(item);
+    });
+
+    console.log('users:', users);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -21,24 +43,35 @@ function login() {
         }
         console.log('Data yang diinputkan:', { email, password });
         try {
-            const response = await axios.post('/api/login', {
-                email,
-                password,
-            });
+            const user = users.find((user) => user.email === email && user.password === password);
+            
+            console.log('user:', user);
 
-            if (response.status === 200) {
-                console.log('Login successful');
-                setAlertSuccess(true);
-                setTimeout(() => {
-                    setAlertSuccess(false);
-                }, 3000);
-            } else {
+            if (!user) {
                 console.error('Login failed');
                 setAlertVisible(true);
                 setTimeout(() => {
                     setAlertVisible(false);
                 }, 3000);
+                localStorage.removeItem('user');
+                return;
             }
+
+            localStorage.setItem('user', JSON.stringify(user));
+
+            console.log('Login successful');
+                setAlertSuccess(true);
+                setTimeout(() => {
+                    if (user.role) {
+                        navigate('/Product');
+                    } else {
+                        navigate('/home');
+                    }
+                }, 1000);
+                setTimeout(() => {
+                    setAlertSuccess(false);
+                }, 3000);
+
         } catch (error) {
             console.error('Error during login:', error);
             setAlertVisible(true);

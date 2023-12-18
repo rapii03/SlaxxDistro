@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react";
 /* eslint-disable react/no-unescaped-entities */
 import Footer2 from "../../Components/user/Footer";
 import Navbar2 from "../../Components/user/Navbar";
+import { Toast } from "flowbite-react";
+import { HiCheck} from "react-icons/hi";
 
 const products = [
   {
@@ -76,6 +79,19 @@ const products = [
 ];
 
 const Home = () => {
+  const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    if (showToast) {
+      const timeoutId = setTimeout(() => {
+        setShowToast(false);
+      }, 2000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [showToast]);
   const handleProduk = (event, product) => {
     event.preventDefault();
 
@@ -98,10 +114,13 @@ const Home = () => {
 
     // Save the updated cart to localStorage
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
+
+    // Show the toast
+    setShowToast(true);
   };
 
   return (
-    <div className=" ">
+    <div className="scroll-smooth">
       <Navbar2 />
       {/* home */}
       <div className="home w-full h-screen bg-secondary ">
@@ -118,9 +137,9 @@ const Home = () => {
                 Discover Now latest collection
               </div>
               <div className="btn">
-                <button className="bg-primary inline-block py-2 px-4 rounded text-[20px] text-white">
+                <a href="#arrival" className="bg-primary inline-block py-2 px-4 rounded text-[20px] text-white">
                   Shop Now
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -143,7 +162,7 @@ const Home = () => {
           <img src="/Images/banner3.png" alt="banner" />
         </div>
         {/* product card */}
-        <div className="card container mx-auto px-2 lg:px-0 ">
+        <div id="arrival" className="card container mx-auto px-2 lg:px-0 ">
           <div className="heading text-[45px] font-bold text-center pb-10 pt-5">
             New Arrival
           </div>
@@ -176,9 +195,9 @@ const Home = () => {
             ))}
           </div>
           <div className="btn  w-full flex justify-center mt-10">
-            <button className="bg-primary hover:bg-[#1B471F] py-2 px-4 rounded text-[14px] text-white">
+            <a href="/all-product" className="bg-primary hover:bg-[#1B471F] py-2 px-4 rounded text-[14px] text-white">
               View More
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -188,6 +207,17 @@ const Home = () => {
         <Footer2 />
       </div>
       {/* footer */}
+      <div className="toast fixed right-0 top-[80%]">
+        {showToast && (
+          <Toast>
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
+              <HiCheck className="h-5 w-5" />
+            </div>
+            <div className="ml-3 text-sm font-normal">Product added to cart</div>
+            <Toast.Toggle />
+          </Toast>
+        )}
+      </div>
     </div>
   );
 };

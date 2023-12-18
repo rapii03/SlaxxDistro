@@ -5,11 +5,13 @@ import Input from '../../../Components/dashboard/Input';
 import { HiInformationCircle } from 'react-icons/hi';
 import axios from 'axios';
 
-import { Button, Modal } from 'flowbite-react';
+import { Button, Modal,  } from 'flowbite-react';
 
-import { FaCheck } from "react-icons/fa";
+import { axiosInstance } from '../../../utils/useAxios';
+import { useNavigate } from 'react-router-dom';
 
 function login() {
+    const navigate = useNavigate();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -42,15 +44,25 @@ function login() {
         }
         console.log('Data yang diinputkan:', { name, email, password, confirmPassword });
         try {
-            const response = await axios.post('/api/register', {
+            const reqData = {
                 name,
                 email,
                 password,
-                confirmPassword,
+                address: "",
+                phone_number: ""
+            }
+            const response = await axiosInstance.post('user', reqData, {
+                headers: {
+                    "ngrok-skip-browser-warning": "69420",
+                }
             });
+            console.log('Response dari server:', response);
             if (response.status === 200) {
                 console.log('Registration successful');
                 setAlertSuccess(true);
+                setTimeout(() => {
+                    navigate('/login');
+                }, 3000);
             } else {
                 console.error('Registration failed');
                 setAlertVisible(true);
@@ -160,7 +172,7 @@ function login() {
                                     <Modal.Header />
                                     <Modal.Body>
                                         <div className="text-center">
-                                            <FaCheck className="mx-auto mb-4 h-14 w-14 text-[#4F6F52] dark:text-gray-200" />
+                                            {/* <FaCheck className="mx-auto mb-4 h-14 w-14 text-[#4F6F52] dark:text-gray-200" /> */}
                                             <h3 className="mb-5 text-lg font-normal text-[#4F6F52] dark:text-gray-400">
                                                 Account Created Successfully
                                             </h3>

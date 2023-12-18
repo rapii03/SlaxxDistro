@@ -57,23 +57,23 @@ const router = createBrowserRouter([
     element: <SignUp />
   },
   {
-    path: "/product",
+    path: "/Product",
     element: <Product />
   },
   {
-    path: "/order",
+    path: "/Order",
     element: <Order />
   },
   {
-    path: "/report-pay",
+    path: "/Report-pay",
     element: <Reportpay />
   },
   {
-    path: "/shipment",
+    path: "/Shipment",
     element: <Shipment />
   },
   {
-    path: "/user",
+    path: "/User",
     element: <User />
   },
 

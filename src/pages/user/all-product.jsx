@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Footer2 from "../../Components/user/Footer";
 import Navbar2 from "../../Components/user/Navbar";
 import Search from "../../Components/user/Search";
+import { Toast } from "flowbite-react";
+import { HiCheck} from "react-icons/hi";
 
 const products = [
   {
@@ -36,6 +38,20 @@ const products = [
 
 const AllProduct = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    if (showToast) {
+      const timeoutId = setTimeout(() => {
+        setShowToast(false);
+      }, 2000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [showToast]);
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -61,6 +77,9 @@ const AllProduct = () => {
 
     // Save the updated cart to localStorage
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
+
+    // Show the toast
+    setShowToast(true);
   };
 
   const handleSearchChange = (query) => {
@@ -79,11 +98,11 @@ const AllProduct = () => {
           </div>
           <div className="search flex justify-end mb-4">
             <div className=" w-full lg:w-[400px]">
-            <Search onSearchChange={handleSearchChange} />
+              <Search onSearchChange={handleSearchChange} />
             </div>
           </div>
           <div className="wrap-card gap-5 grid grid-cols-10  h-[800px] overflow-y-auto">
-          {filteredProducts.map((product) => (
+            {filteredProducts.map((product) => (
               <form
                 key={product.id}
                 onSubmit={(event) => handleProduk(event, product)}
@@ -118,6 +137,17 @@ const AllProduct = () => {
       </div>
       {/* product */}
       <Footer2 />
+      <div className="toast fixed right-0 top-[80%]">
+        {showToast && (
+          <Toast>
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
+              <HiCheck className="h-5 w-5" />
+            </div>
+            <div className="ml-3 text-sm font-normal">Product added to cart</div>
+            <Toast.Toggle />
+          </Toast>
+        )}
+      </div>
     </div>
   );
 };

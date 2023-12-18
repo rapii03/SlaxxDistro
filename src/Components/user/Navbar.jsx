@@ -1,8 +1,26 @@
 "use client";
 
 import { Avatar, Dropdown, Navbar } from "flowbite-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar2 = () => {
+  const navigate = useNavigate();
+
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    setIsLoading(false);
+  }, [isLoading])
+
+  function handleLogout () {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/home");
+  }
+
   return (
     <div className="z-40 bg-primary fixed w-full">
       <Navbar className="text-white bg-primary container mx-auto" fluid rounded>
@@ -11,25 +29,36 @@ const Navbar2 = () => {
             Slaxx Distro
           </span>
         </Navbar.Brand>
+        {/* login profile */}
         <div className="flex md:order-2">
-          <Dropdown
-            arrowIcon={false}
-            inline
-            label={
-              <Avatar
-                rounded
-              />
-            }
-          >
-            <Dropdown.Header>
-              <span className="block text-sm">Alexander</span>
-            </Dropdown.Header>
-            <Dropdown.Item>
-              <a className="w-full" href="/profile">Profile</a>
-            </Dropdown.Item>
-            <Dropdown.Divider />
-            <Dropdown.Item>Sign out</Dropdown.Item>
-          </Dropdown>
+          {/* sudah login */}
+          {!isLoading && user && (
+            <Dropdown
+              arrowIcon={false}
+              inline
+              label={
+                <Avatar
+                  rounded
+                />
+              }
+            >
+              <Dropdown.Header>
+                <span className="block text-sm">{user.name}</span>
+              </Dropdown.Header>
+              <Dropdown.Item>
+                <a className="w-full" href="/profile">Profile</a>
+              </Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item>
+                <button onClick={handleLogout}>Sign out</button>
+              </Dropdown.Item>
+            </Dropdown>
+          )}
+          {/* btn login */}
+          {!isLoading && !user && (
+            <a href="/login" className="p-2 px-6 hover:bg-gray-300 hover:text-white rounded bg-white text-primary">Login</a>
+          )}
+
           <Navbar.Toggle />
         </div>
         <Navbar.Collapse>

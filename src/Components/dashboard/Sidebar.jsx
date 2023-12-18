@@ -1,12 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BsBoxSeam } from "react-icons/bs";
 import { TbBrandShopee } from "react-icons/tb";
 import { TbReportMoney } from "react-icons/tb";
 import { TbTruckDelivery } from "react-icons/tb";
 import { LuUser2 } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = ({ children }) => {
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(true);
     const currentPath = window.location.pathname;
+    
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user?.role) {
+            setTimeout(() => {
+                navigate("/login");
+            }, 1000);
+        } else {
+            setIsLoading(false);
+        }
+    }, [isLoading]);
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <>
             <aside id="default-sidebar"

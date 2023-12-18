@@ -23,6 +23,7 @@ function product() {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
+        
         axios.get('YOUR_BACKEND_API_ENDPOINT')
             .then(response => {
                 setOriginalProducts(response.data);

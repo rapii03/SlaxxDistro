@@ -3,6 +3,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from '../../../Components/dashboard/Sidebar'
 
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../../firebase-config";
+
 function addProduct() {
 
     const [formData, setFormData] = useState({
@@ -19,47 +22,39 @@ function addProduct() {
         });
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onloadend = () => {
+    const [imageUpload, setImageUpload] = useState();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+        if (imageUpload) {
+            const imageRef = ref(storage, `pwl-slaxx/images/${imageUpload.name}`);
+            await uploadBytes(imageRef, imageUpload);
+            const imageUrl = await getDownloadURL(imageRef);
+
             setFormData({
                 ...formData,
-                image: {
-                    file: file,
-                    preview: reader.result,
-                },
+                image: imageUrl,
             });
-            console.log('Image Data:', reader.result);
-        };
-        if (file) {
-            reader.readAsDataURL(file);
+
+            console.log('FormData before sending:', {
+                ...formData,
+                image: imageUrl,
+            });
         }
-    };
 
+        const response = await axios.post('YOUR_BACKEND_API_ENDPOINT', {
+            image: formData.image,
+        });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log('Response dari data yang diinputkan:', formData);
-        try {
-            const data = new FormData();
-            data.append('name', formData.name);
-            data.append('price', formData.price);
-            data.append('stock', formData.stock);
-            data.append('image', formData.image.file);
+        console.log('Response from server:', response.data);
 
-            const response = await axios.post('YOUR_BACKEND_API_ENDPOINT', data);
-            // Log the response to the console
-            console.log('Data yang diinputkan:', formData);
-            console.log('Response dari server:', response.data);
+        localStorage.setItem('savedImage', formData.image);
 
-            localStorage.setItem('savedImage', formData.image.preview);
-
-        } catch (error) {
-            console.error('Error adding product:', error);
-        }
-    };
-
+    } catch (error) {
+        console.error('Error adding product:', error);
+    }
+};
 
     return (
         <>
@@ -113,20 +108,24 @@ function addProduct() {
                                         </div>
                                         <div className="flex flex-col mb-4">
                                             <label htmlFor="image">Add Image</label>
-                                            <input
-                                                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-transparent dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                                aria-describedby="user_avatar_help"
-                                                id="image"
-                                                type="file"
-                                                onChange={handleImageChange}
-                                            />
-                                            {formData.image && (
-                                                <img
-                                                    src={formData.image.preview}
-                                                    alt="Image Preview"
-                                                    className="mt-2 rounded-lg max-h-36"
+                                            <div className="App">
+                                                <input
+                                                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-transparent dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                                    aria-describedby="user_avatar_help"
+                                                    id="image"
+                                                    type="file"
+                                                    onChange={(event) => {
+                                                        setImageUpload(event.target.files[0]);
+                                                        setFormData({
+                                                            ...formData,
+                                                            image: {
+                                                                file: event.target.files[0],
+                                                                preview: URL.createObjectURL(event.target.files[0]),
+                                                            },
+                                                        });
+                                                    }}
                                                 />
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

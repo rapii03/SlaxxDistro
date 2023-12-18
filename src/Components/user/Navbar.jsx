@@ -49,6 +49,11 @@ const Navbar2 = () => {
                 <a className="w-full" href="/profile">Profile</a>
               </Dropdown.Item>
               <Dropdown.Divider />
+              {user?.role && (
+                <Dropdown.Item>
+                  <a href="/Product" >Dashboard</a>
+                </Dropdown.Item>
+              )}
               <Dropdown.Item>
                 <button onClick={handleLogout}>Sign out</button>
               </Dropdown.Item>

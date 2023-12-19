@@ -27,5 +27,21 @@ Wait until your computer has finished the compilation process and opens a tab in
 4. Git
 5. React.js
 
+# Arsitektur
+pada front end terdapat folder src yang berisi 
+1. assets, assets merupakan tempat menaru gambar pada front end
+2. Components, merupakan komponen komponen yang ada pada fornt end, dibagi menjadi dashboard, user.
+   - Dashboard berisi: EyeClose.jsx EyeOpen.jsx Input.jsx dan Sidebar.jsx
+   - User berisi: DeleteIcon.jsx Footer.jsx Navbar.jsx Search.jsx
+3. pages, merupakan tampilan halaman yang ada pada sistem ini. meliputi:
+   - Dashboard, dashboard berisi
+     a. autorisasi merupakan tempat melakukan login dan signup pada admin dan user
+     b. order merupakan tampilan halaman order yang berisi detail-order.jsx dan order.jsx
+     c. product merupakan tampilan halaman product yang berisi add-product.jsx edit-product.jsx dan product.jsx
+     d. report-pay merupakan tampilan halaman menu report-pay yang berisi report-pay.jsx
+     e. shipment, merupakan tampilan halaman shipment yang berisi shipment.jsx
+     f. user, merupakan tampilan halaman user yang berisi add-user.jsx edit-user.jsx dan user.jsx
+     
+   - User
 ## Author
 PWL_Kelompok14_Slaxx

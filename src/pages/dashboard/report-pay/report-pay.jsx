@@ -8,30 +8,38 @@ import { Link } from 'react-router-dom';
 
 import { Button, Modal } from 'flowbite-react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
+import { axiosInstance } from '../../../utils/useAxios';
+
 
 function ReportPay() {
-    const [originalProducts, setOriginalProducts] = useState([
-        { id: 1, name: 'Gitar Akustik 1', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 2, name: 'Gitar Akustik 2', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 3, name: 'Gitar Akustik 3', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 4, name: 'Gitar Akustik 4', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 5, name: 'Gitar Akustik 5', items: '5', price: ' 55000000', status: 'Delivery' },
-        { id: 6, name: 'Gitar Akustik 6', items: '5', price: ' 55000000', status: 'Succes' },
-    ]);
 
+    
+    const [originalProducts, setOriginalProducts] = useState([
+        //     { id: 1, name: 'Gitar Akustik 1', items: '5', price: ' 55000000', status: 'Succes' },
+        //     { id: 2, name: 'Gitar Akustik 2', items: '5', price: ' 55000000', status: 'Succes' },
+        //     { id: 3, name: 'Gitar Akustik 3', items: '5', price: ' 55000000', status: 'Succes' },
+        //     { id: 4, name: 'Gitar Akustik 4', items: '5', price: ' 55000000', status: 'Succes' },
+        //     { id: 5, name: 'Gitar Akustik 5', items: '5', price: ' 55000000', status: 'Delivery' },
+        //     { id: 6, name: 'Gitar Akustik 6', items: '5', price: ' 55000000', status: 'Succes' },
+    ]);
     const [products, setProducts] = useState(originalProducts);
     const [searchTerm, setSearchTerm] = useState('');
-    useEffect(() => {
-        axios.get('YOUR_BACKEND_API_ENDPOINT')
-            .then(response => {
-                setOriginalProducts(response.data);
-                setProducts(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }, []);
 
+    let loading = true;
+    useEffect(() => {
+        (async () => {
+            const orderRes = await axiosInstance.get(`/order`, {
+                    headers: {
+                    "ngrok-skip-browser-warning": "69420",
+                },
+            });
+            const newData = orderRes.data.filter(item => item.status === 'success');
+            setOriginalProducts(newData);
+            setProducts(newData);
+            loading = false;
+        })()
+    }, [loading]);
+    
     const itemsPerPage = 5;
     const [currentPage, setCurrentPage] = useState(1);
     const onPageChange = (page) => setCurrentPage(page);
@@ -42,14 +50,14 @@ function ReportPay() {
     const displayedProducts = products.slice(startIndex, endIndex);
 
     const handleSearch = () => {
-        const filteredProducts = originalProducts.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        setCurrentPage(1);
+        const filteredProducts = originalProducts.filter(product => product.customer.name.toLowerCase().includes(searchTerm.toLowerCase()));
         setProducts(filteredProducts);
     };
 
     useEffect(() => {
         handleSearch();
     }, [searchTerm]);
-
     return (
         <>
             <Sidebar>
@@ -95,9 +103,9 @@ function ReportPay() {
                                     >
                                         {startIndex + index + 1}
                                     </th>
-                                    <td className="px-6 py-4">{order.name}</td>
-                                    <td className="px-6 py-4">{order.items}</td>
-                                    <td className="px-6 py-4">Rp. {order.price}</td>
+                                    <td className="px-6 py-4">{order.customer.name}</td>
+                                    <td className="px-6 py-4">{order.item_count}</td>
+                                    <td className="px-6 py-4">Rp. {order.price_count}</td>
                                     <td className={`px-6 py-4 ${order.status === 'Delivery' ? 'text-[#FF5724]' : 'text-[#00AA63]'}`}>
                                         {order.status}
                                     </td>

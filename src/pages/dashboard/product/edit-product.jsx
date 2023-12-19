@@ -1,43 +1,66 @@
 'use client';
+import { Button, Modal,  } from 'flowbite-react';
+import { Alert } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
+import { axiosInstance } from '../../../utils/useAxios';
 import axios from 'axios';
 import Sidebar from '../../../Components/dashboard/Sidebar'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import useSWR from 'swr';
 
 // Simulasi API endpoint
-const API_ENDPOINT = 'https://jsonplaceholder.typicode.com';
 
 function editProduct() {
+    const navigate = useNavigate();
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertSuccess, setAlertSuccess] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
-        price: '',
-        stock: '',
-        image: null,
+        price: 0,
+        stock: 0,
+        image: '',
     });
 
     const [initialProductData, setInitialProductData] = useState({
-        name: 'Nama Produk Awal',
-        price: 'Harga Awal',
-        stock: 'Stok Awal',
-        image_url: 'https://contoh.com/gambar-awal.jpg', // Ganti dengan URL yang sebenarnya
+        name: '',
+        price: 0,
+        stock: 0,
+        image: '', // Ganti dengan URL yang sebenarnya
     });
 
-    const { productId } = useParams(); // Dapatkan ID produk dari parameter URL
+    const { id } = useParams(); // Dapatkan ID produk dari parameter URL
 
+    const { data, error, isLoading } = useSWR(`/product/?id=${id}`, (url) =>
+        axiosInstance
+        .get(url, {
+            headers: {
+            "ngrok-skip-browser-warning": "69420",
+            },
+        })
+        .then((res) => {
+            setInitialProductData({
+                name: res.data.name,
+                price: res.data.price,
+                stock: res.data.stock,
+                image: res.data.image,
+            })
+            return res.data;
+        })
+    );
+
+    
     useEffect(() => {
-        // Simulasikan pengambilan data produk dari backend berdasarkan productId
+    
+        // Simulasikan pengambilan data produk dari backend berdasarkan id
         // Untuk tujuan demonstrasi, kita akan menggunakan initialProductData sebagai data yang diambil
         setFormData({
             name: initialProductData.name,
             price: initialProductData.price,
             stock: initialProductData.stock,
-            image: {
-                file: null, // Anda mungkin perlu mengubah ini berdasarkan cara backend mengembalikan data gambar
-                preview: initialProductData.image_url,
-            },
+            image: initialProductData.image,
         });
-    }, [initialProductData, productId]);
-
+    }, [initialProductData, id]);
+    
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -67,21 +90,34 @@ function editProduct() {
         e.preventDefault();
         console.log('Data yang diinputkan:', formData);
         try {
-            const data = new FormData();
-            data.append('name', formData.name);
-            data.append('price', formData.price);
-            data.append('stock', formData.stock);
-            data.append('image', formData.image.file);
 
-            // Perbarui URL permintaan ke endpoint edit pada backend
-            const response = await axios.put(`${API_ENDPOINT}/produk/${productId}`, data);
+            const data = {
+                id: id,
+                name: formData.name,
+                price: formData.price,
+                stock: formData.stock,
+                image: formData.image,
+            }
 
-            // Tampilkan respons ke konsol
-            console.log('Data yang diinputkan:', formData);
-            console.log('Respons dari server:', response.data);
+            const response = await axiosInstance.put('/product', data, {
+                headers: {
+                    "ngrok-skip-browser-warning": "69420",
+                }
+            })
 
-            localStorage.setItem('savedImage', formData.image.preview);
-
+            if (response.status === 200) {
+                console.log('Registration successful');
+                setAlertSuccess(true);
+                setTimeout(() => {
+                    navigate('/Product');
+                }, 3000);
+            } else {
+                console.error('Registration failed');
+                setAlertVisible(true);
+                setTimeout(() => {
+                    setAlertVisible(false);
+                }, 3000);
+            }
         } catch (error) {
             console.error('Kesalahan mengedit produk:', error);
         }
@@ -92,7 +128,7 @@ function editProduct() {
 
             <Sidebar>
                 <div className="flex flex-col p-4">
-                    <p className="text-4xl text-primary font-bold">Edit Product {productId}</p>
+                    <p className="text-4xl text-primary font-bold">Edit Product {id}</p>
                     <form onSubmit={handleSubmit}>
                         <div className="wrap mt-[100px] w-full">
                             <div className="flex w-full flex-col  justify-center h-72 border-2 border-[#739072] p-8 rounded-lg">
@@ -146,16 +182,38 @@ function editProduct() {
                                             type="file"
                                             onChange={handleImageChange}
                                         />
-                                        {formData.image && (
+                                        {formData?.image && (
                                             <img
-                                                src={formData.image.preview}
+                                                src={formData.image}
                                                 alt="Image Preview"
                                                 className="mt-2 rounded-lg max-h-36"
                                             />
                                         )}
                                     </div>
                                 </div>
-
+                                {alertVisible && (
+                                    <Alert color="failure" icon={HiInformationCircle}>
+                                        <span className="font-medium">Info SlaxxDistro!</span> Masukkan Data Yang Dibutuhkan!!!
+                                    </Alert>
+                                )}
+                                {alertSuccess && (
+                                    <Modal show={alertSuccess} size="md" onClose={() => setAlertSuccess(false)} popup>
+                                        <Modal.Header />
+                                        <Modal.Body>
+                                            <div className="text-center">
+                                                {/* <FaCheck className="mx-auto mb-4 h-14 w-14 text-[#4F6F52] dark:text-gray-200" /> */}
+                                                <h3 className="mb-5 text-lg font-normal text-[#4F6F52] dark:text-gray-400">
+                                                    Product Updated Successfully
+                                                </h3>
+                                                <div className="flex justify-center">
+                                                    <Button color="success" onClick={() => setAlertSuccess(false)}>
+                                                        Okay
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </Modal.Body>
+                                    </Modal>
+                                )}
                                 <div className="flex justify-end mt-4">
                                     <button
                                         type="submit"

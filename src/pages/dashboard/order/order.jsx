@@ -2,51 +2,53 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from '../../../Components/dashboard/Sidebar'
+import { axiosInstance } from '../../../utils/useAxios';
 
 import { Pagination } from 'flowbite-react';
 import { Link } from 'react-router-dom';
+import useSWR, { mutate } from 'swr';
 
 function order() {
-    const [originalProducts, setOriginalProducts] = useState([
-        { id: 1, name: 'Gitar Akustik 1', items: '5', price: '55000000' },
-        { id: 2, name: 'Gitar Akustik 2', items: '5', price: '55000000' },
-        { id: 3, name: 'Gitar Akustik 3', items: '5', price: '55000000' },
-        { id: 4, name: 'Gitar Akustik 4', items: '5', price: '55000000' },
-        { id: 5, name: 'Gitar Akustik 5', items: '5', price: '55000000' },
-        { id: 6, name: 'Gitar Akustik 6', items: '5', price: '55000000' },
-    ]);
+    let orders = [];
 
-    const [products, setProducts] = useState(originalProducts);
-    const [searchTerm, setSearchTerm] = useState('');
+    const { data, error, isLoading } = useSWR(`/order`, (url) =>
+        axiosInstance
+        .get(url, {
+            headers: {
+            "ngrok-skip-browser-warning": "69420",
+            },
+        })
+        .then((res) => res.data)
+    );
 
-    useEffect(() => {
-        axios.get('YOUR_BACKEND_API_ENDPOINT')
-            .then(response => {
-                setOriginalProducts(response.data);
-                setProducts(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }, []);
-
-    const itemsPerPage = 5;
+    data?.map((item) => {
+        if (item.status === "order") {
+            orders.push(item);
+        }
+    });
+    
     const [currentPage, setCurrentPage] = useState(1);
-    const onPageChange = (page) => setCurrentPage(page);
+    const itemsPerPage = 5;
+    
+    const [search, setSearch] = useState("");
+
+    const filteredItems = orders.filter(
+        (item) =>
+        item.customer.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const totalFilteredPages = Math.ceil(filteredItems.length / itemsPerPage);
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
-    const displayedProducts = products.slice(startIndex, endIndex);
-
-    const handleSearch = () => {
-        const filteredProducts = originalProducts.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        setProducts(filteredProducts);
-    };
+    const onPageChange = (page) => setCurrentPage(page);
 
     useEffect(() => {
-        handleSearch();
-    }, [searchTerm]);
+        mutate("/order");
+
+    }, [isLoading]);
 
     return (
         <>
@@ -59,8 +61,8 @@ function order() {
                                 className="shadow appearance-none border rounded w-64 py-2 px-3 text-[#739072] leading-tight focus:outline-none focus:shadow-outline focus:ring-[#937af9]"
                                 type="text"
                                 placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
                     </div>
@@ -85,7 +87,7 @@ function order() {
                             </tr>
                         </thead>
                         <tbody>
-                            {displayedProducts.map((order, index) => (
+                            {paginatedItems.map((order, index) => (
                                 <tr key={index} className="bg-white border-b">
                                     <th
                                         scope="row"
@@ -93,9 +95,9 @@ function order() {
                                     >
                                         {startIndex + index + 1}
                                     </th>
-                                    <td className="px-6 py-4">{order.name}</td>
-                                    <td className="px-6 py-4">{order.items}</td>
-                                    <td className="px-6 py-4">Rp. {order.price}</td>
+                                    <td className="px-6 py-4">{order.customer.name}</td>
+                                    <td className="px-6 py-4">{order.item_count}</td>
+                                    <td className="px-6 py-4">Rp. {order.price_count}</td>
                                     <td className="px-6 py-4">
                                         <Link to={`/detail-order/${order.id}`} className="font-medium text-[#FF5724]">
                                             Detail
@@ -106,7 +108,7 @@ function order() {
                         </tbody>
                     </table>
                     <div className="flex overflow-x-auto sm:justify-center mt-5">
-                        <Pagination currentPage={currentPage} totalPages={Math.ceil(products.length / itemsPerPage)} onPageChange={onPageChange} showIcons className='text-[#739072]' />
+                        <Pagination currentPage={currentPage} totalPages={totalFilteredPages} onPageChange={onPageChange} showIcons className='text-[#739072]' />
                     </div>
                 </div>
             </Sidebar>

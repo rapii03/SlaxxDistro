@@ -1,12 +1,17 @@
 'use client';
+import { Button, Modal,  } from 'flowbite-react';
+import { Alert } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Sidebar from '../../../Components/dashboard/Sidebar'
-
+import { axiosInstance } from '../../../utils/useAxios';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../../../firebase-config";
+import { useNavigate } from 'react-router-dom';
 
 function addProduct() {
+    const navigate = useNavigate();
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertSuccess, setAlertSuccess] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -27,6 +32,7 @@ function addProduct() {
     e.preventDefault();
 
     try {
+        let image = "";
         if (imageUpload) {
             const imageRef = ref(storage, `pwl-slaxx/images/${imageUpload.name}`);
             await uploadBytes(imageRef, imageUpload);
@@ -37,19 +43,37 @@ function addProduct() {
                 image: imageUrl,
             });
 
-            console.log('FormData before sending:', {
-                ...formData,
-                image: imageUrl,
-            });
+            image = imageUrl;
         }
 
-        const response = await axios.post('YOUR_BACKEND_API_ENDPOINT', {
-            image: formData.image,
-        });
+        if (image != "") {
+            const reqData = {
+                name: formData.name,
+                price: formData.price,
+                stock: formData.stock,
+                image,
+            }
+    
+            const response = await axiosInstance.post('/product', reqData, {
+                headers: {
+                    "ngrok-skip-browser-warning": "69420",
+                }
+            })
 
-        console.log('Response from server:', response.data);
-
-        localStorage.setItem('savedImage', formData.image);
+            if (response.status === 200) {
+                console.log('Registration successful');
+                setAlertSuccess(true);
+                setTimeout(() => {
+                    navigate('/Product');
+                }, 3000);
+            } else {
+                console.error('Registration failed');
+                setAlertVisible(true);
+                setTimeout(() => {
+                    setAlertVisible(false);
+                }, 3000);
+            }
+        }
 
     } catch (error) {
         console.error('Error adding product:', error);
@@ -129,6 +153,29 @@ function addProduct() {
                                         </div>
                                     </div>
                                 </div>
+                                {alertVisible && (
+                                    <Alert color="failure" icon={HiInformationCircle}>
+                                        <span className="font-medium">Info SlaxxDistro!</span> Masukkan Data Yang Dibutuhkan!!!
+                                    </Alert>
+                                )}
+                                {alertSuccess && (
+                                    <Modal show={alertSuccess} size="md" onClose={() => setAlertSuccess(false)} popup>
+                                        <Modal.Header />
+                                        <Modal.Body>
+                                            <div className="text-center">
+                                                {/* <FaCheck className="mx-auto mb-4 h-14 w-14 text-[#4F6F52] dark:text-gray-200" /> */}
+                                                <h3 className="mb-5 text-lg font-normal text-[#4F6F52] dark:text-gray-400">
+                                                    Product Created Successfully
+                                                </h3>
+                                                <div className="flex justify-center">
+                                                    <Button color="success" onClick={() => setAlertSuccess(false)}>
+                                                        Okay
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </Modal.Body>
+                                    </Modal>
+                                )}
                                 <div className="flex justify-end mt-4">
                                     <button
                                         type="submit"

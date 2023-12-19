@@ -5,28 +5,37 @@ import Sidebar from '../../../Components/dashboard/Sidebar'
 
 import { Pagination } from 'flowbite-react';
 
+import { axiosInstance } from '../../../utils/useAxios';
+
+
 function Shipment() {
     const [originalProducts, setOriginalProducts] = useState([
-        { id: 1, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 2, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Delivery' },
-        { id: 3, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 4, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 5, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
-        { id: 6, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
+        // { id: 1, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
+        // { id: 2, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Delivery' },
+        // { id: 3, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
+        // { id: 4, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
+        // { id: 5, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
+        // { id: 6, name: 'Gitar Akustik', items: '5', price: ' 55000000', status: 'Succes' },
     ]);
 
     const [products, setProducts] = useState(originalProducts);
     const [searchTerm, setSearchTerm] = useState('');
+
+
+    let loading = true;
     useEffect(() => {
-        axios.get('YOUR_BACKEND_API_ENDPOINT')
-            .then(response => {
-                setOriginalProducts(response.data);
-                setProducts(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
+        (async () => {
+            const orderRes = await axiosInstance.get(`/order`, {
+                    headers: {
+                    "ngrok-skip-browser-warning": "69420",
+                },
             });
-    }, []);
+            const newData = orderRes.data.filter(item => item.status !== 'order');
+            setOriginalProducts(newData);
+            setProducts(newData);
+            loading = false;
+        })()
+    }, [loading]);
 
     const itemsPerPage = 5;
     const [currentPage, setCurrentPage] = useState(1);
@@ -38,7 +47,8 @@ function Shipment() {
     const displayedProducts = products.slice(startIndex, endIndex);
 
     const handleSearch = () => {
-        const filteredProducts = originalProducts.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        setCurrentPage(1);
+        const filteredProducts = originalProducts.filter(product => product.customer.name.toLowerCase().includes(searchTerm.toLowerCase()));
         setProducts(filteredProducts);
     };
 
@@ -91,10 +101,10 @@ function Shipment() {
                                     >
                                         {startIndex + index + 1}
                                     </th>
-                                    <td className="px-6 py-4">{order.name}</td>
-                                    <td className="px-6 py-4">{order.items}</td>
-                                    <td className="px-6 py-4">Rp. {order.price}</td>
-                                    <td className={`px-6 py-4 ${order.status === 'Delivery' ? 'text-[#FF5724]' : 'text-[#00AA63]'}`}>
+                                    <td className="px-6 py-4">{order.customer.name}</td>
+                                    <td className="px-6 py-4">{order.item_count}</td>
+                                    <td className="px-6 py-4">Rp. {order.price_count}</td>
+                                    <td className={`px-6 py-4 ${order.status === 'delivery' || order.status === 'pending' ? 'text-[#FF5724]' : 'text-[#00AA63]'}`}>
                                         {order.status}
                                     </td>
 

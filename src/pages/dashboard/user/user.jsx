@@ -5,33 +5,38 @@ import Sidebar from '../../../Components/dashboard/Sidebar'
 
 import { Pagination } from 'flowbite-react';
 import { Link } from 'react-router-dom';
-
+import { axiosInstance } from '../../../utils/useAxios';
 import { Button, Modal } from 'flowbite-react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
 function user() {
     const [originalProducts, setOriginalProducts] = useState([
-        { id: 1, name: 'Gitar Akustik 1', price: '55000000' },
-        { id: 2, name: 'Gitar Akustik 2', price: '55000000' },
-        { id: 3, name: 'Gitar Akustik 3', price: '55000000' },
-        { id: 4, name: 'Gitar Akustik 4', price: '55000000' },
-        { id: 5, name: 'Gitar Akustik 5', price: '55000000' },
-        { id: 6, name: 'Gitar Akustik 6', price: '55000000' },
+        // { id: 1, name: 'Gitar Akustik 1', price: '55000000' },
+        // { id: 2, name: 'Gitar Akustik 2', price: '55000000' },
+        // { id: 3, name: 'Gitar Akustik 3', price: '55000000' },
+        // { id: 4, name: 'Gitar Akustik 4', price: '55000000' },
+        // { id: 5, name: 'Gitar Akustik 5', price: '55000000' },
+        // { id: 6, name: 'Gitar Akustik 6', price: '55000000' },
     ]);
 
     const [products, setProducts] = useState(originalProducts);
     const [searchTerm, setSearchTerm] = useState('');
+    const [targetId, setTargetId] = useState(0);
 
+    let loading = true;
     useEffect(() => {
-        axios.get('YOUR_BACKEND_API_ENDPOINT')
-            .then(response => {
-                setOriginalProducts(response.data);
-                setProducts(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
+        (async () => {
+            const orderRes = await axiosInstance.get('/user', {
+                headers: {
+                    "ngrok-skip-browser-warning": "69420",
+                },
             });
-    }, []);
+            const newData = orderRes.data;
+            setOriginalProducts(newData);
+            setProducts(newData);
+            loading = false;
+        })();
+    }, [loading]);
 
     const itemsPerPage = 5;
     const [currentPage, setCurrentPage] = useState(1);
@@ -45,13 +50,31 @@ function user() {
     const [openModal, setOpenModal] = useState(false);
 
     const handleSearch = () => {
-        const filteredProducts = originalProducts.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        const filteredProducts = originalProducts.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()) || product.email.toLowerCase().includes(searchTerm.toLowerCase()));
         setProducts(filteredProducts);
     };
 
     useEffect(() => {
         handleSearch();
     }, [searchTerm]);
+
+    async function handleDelete () {
+        console.log(targetId);
+        await axiosInstance.delete(`/user?id=${targetId}`, {id: targetId},{
+            headers: {
+                "ngrok-skip-browser-warning": "69420",
+            },
+        });
+        const orderRes = await axiosInstance.get('/user', {
+            headers: {
+                "ngrok-skip-browser-warning": "69420",
+            },
+        });
+        const newData = orderRes.data;
+        setOriginalProducts(newData);
+        setProducts(newData);
+        setOpenModal(false);
+    }
 
     return (
         <>
@@ -86,10 +109,10 @@ function user() {
                                     No
                                 </th>
                                 <th scope="col" className="px-6 py-3">
-                                    Name Product
+                                    Name
                                 </th>
                                 <th scope="col" className="px-6 py-3">
-                                    Price
+                                    Email
                                 </th>
                                 <th scope="col" className="px-8 py-3">
                                     Aksi
@@ -106,12 +129,12 @@ function user() {
                                         {startIndex + index + 1}
                                     </th>
                                     <td className="px-6 py-4">{product.name}</td>
-                                    <td className="px-6 py-4">Rp. {product.price}</td>
+                                    <td className="px-6 py-4">{product.email}</td>
                                     <td className="px-6 py-4">
                                         <Link to={`/edit-user/${product.id}`} className="font-medium text-[#FFA724]">
                                             Edit
                                         </Link>
-                                        <Link to="#" onClick={() => setOpenModal(true)} className="font-medium text-[#4F6F52] ml-6">
+                                        <Link to="#" onClick={() => {setOpenModal(true); setTargetId(product.id)}} className="font-medium text-[#4F6F52] ml-6">
                                             Delete
                                         </Link>
                                     </td>
@@ -134,7 +157,7 @@ function user() {
                                     <Button className='bg-[#E2E8F0] text-black w-[40%]' style={{ backgroundColor: '#E2E8F0' }} onClick={() => setOpenModal(false)}>
                                         Back
                                     </Button>
-                                    <Button className='bg-[#739072] w-[40%]' style={{ backgroundColor: '#739072' }} onClick={() => setOpenModal(false)}>
+                                    <Button className='bg-[#739072] w-[40%]' style={{ backgroundColor: '#739072' }} onClick={handleDelete}>
                                         {"Delete"}
                                     </Button>
                                 </div>

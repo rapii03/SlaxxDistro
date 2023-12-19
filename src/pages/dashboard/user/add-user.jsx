@@ -1,14 +1,23 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { Button, Modal,  } from 'flowbite-react';
+import { Alert } from 'flowbite-react';
 import axios from 'axios';
 import Sidebar from '../../../Components/dashboard/Sidebar'
+import { useNavigate } from 'react-router-dom';
+import { axiosInstance } from '../../../utils/useAxios';
 
 function addUser() {
+    const navigate = useNavigate();
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertSuccess, setAlertSuccess] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
+        address: '',
+        phone_number: ''
     });
 
     const handleChange = (e) => {
@@ -22,17 +31,25 @@ function addUser() {
         e.preventDefault();
         console.log('Response dari data yang diinputkan:', formData);
         try {
-            const data = new FormData();
-            data.append('name', formData.name);
-            data.append('email', formData.email);
-            data.append('password', formData.password);
+            const response = await axiosInstance.post('/user', formData, {
+                headers: {
+                    "ngrok-skip-browser-warning": "69420",
+                }
+            })
 
-            const response = await axios.post('YOUR_BACKEND_API_ENDPOINT', data);
-            console.log('Data yang diinputkan:', formData);
-            console.log('Response dari server:', response.data);
-
-            localStorage.setItem('savedImage', formData.image.preview);
-
+            if (response.status === 200) {
+                console.log('Registration successful');
+                setAlertSuccess(true);
+                setTimeout(() => {
+                    navigate('/User');
+                }, 3000);
+            } else {
+                console.error('Registration failed');
+                setAlertVisible(true);
+                setTimeout(() => {
+                    setAlertVisible(false);
+                }, 3000);
+            }
         } catch (error) {
             console.error('Error adding user:', error);
         }
@@ -91,6 +108,29 @@ function addUser() {
                                         </div>
                                     </div>
                                 </div>
+                                {alertVisible && (
+                                    <Alert color="failure" icon={HiInformationCircle}>
+                                        <span className="font-medium">Info SlaxxDistro!</span> Masukkan Data Yang Dibutuhkan!!!
+                                    </Alert>
+                                )}
+                                {alertSuccess && (
+                                    <Modal show={alertSuccess} size="md" onClose={() => setAlertSuccess(false)} popup>
+                                        <Modal.Header />
+                                        <Modal.Body>
+                                            <div className="text-center">
+                                                {/* <FaCheck className="mx-auto mb-4 h-14 w-14 text-[#4F6F52] dark:text-gray-200" /> */}
+                                                <h3 className="mb-5 text-lg font-normal text-[#4F6F52] dark:text-gray-400">
+                                                    Product Created Successfully
+                                                </h3>
+                                                <div className="flex justify-center">
+                                                    <Button color="success" onClick={() => setAlertSuccess(false)}>
+                                                        Okay
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </Modal.Body>
+                                    </Modal>
+                                )}
                                 <div className="flex justify-end mt-4">
                                     <button
                                         type="submit"

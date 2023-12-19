@@ -1,58 +1,64 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { axiosInstance } from '../../../utils/useAxios';
 import Sidebar from '../../../Components/dashboard/Sidebar'
 
 import { Pagination } from 'flowbite-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Button, Modal } from 'flowbite-react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
+import useSWR, { mutate } from 'swr';
 
 function product() {
-    const [originalProducts, setOriginalProducts] = useState([
-        { id: 1, name: 'Gitar Akustik 1', price: '55000000', stock: 10 },
-        { id: 2, name: 'Gitar Akustik 2', price: '56000000', stock: 11 },
-        { id: 3, name: 'Gitar Akustik 3', price: '57000000', stock: 12 },
-        { id: 4, name: 'Gitar Akustik 4', price: '58000000', stock: 13 },
-        { id: 5, name: 'Gitar Akustik 5', price: '59000000', stock: 14 },
-        { id: 6, name: 'Gitar Akustik 6', price: '60000000', stock: 15 },
-    ]);
 
-    const [products, setProducts] = useState(originalProducts);
-    const [searchTerm, setSearchTerm] = useState('');
+    let products = [];
 
-    useEffect(() => {
-        
-        axios.get('YOUR_BACKEND_API_ENDPOINT')
-            .then(response => {
-                setOriginalProducts(response.data);
-                setProducts(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }, []);
+    const { data, error, isLoading } = useSWR(`/product`, (url) =>
+        axiosInstance
+        .get(url, {
+            headers: {
+            "ngrok-skip-browser-warning": "69420",
+            },
+        })
+        .then((res) => res.data)
+    );
 
-    const itemsPerPage = 5;
+    data?.map((item) => {
+        products.push(item);
+    });
+    
+    const [targetId, setTargetId] = useState();
     const [currentPage, setCurrentPage] = useState(1);
-    const onPageChange = (page) => setCurrentPage(page);
+    const itemsPerPage = 5;
+    
+    const [openModal, setOpenModal] = useState(false);
+    const [search, setSearch] = useState("");
+
+    const filteredItems = products.filter(
+        (item) =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const totalFilteredPages = Math.ceil(filteredItems.length / itemsPerPage);
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
-    const displayedProducts = products.slice(startIndex, endIndex);
+    const onPageChange = (page) => setCurrentPage(page);
 
-    const [openModal, setOpenModal] = useState(false);
-
-    const handleSearch = () => {
-        const filteredProducts = originalProducts.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        setProducts(filteredProducts);
+    const handleDelete = async () => {
+        console.log(targetId);
+        await axiosInstance.delete(`/product?id=${targetId}`, {id: targetId},{
+            headers: {
+                "ngrok-skip-browser-warning": "69420",
+            },
+        });
+        mutate("/product");
+        setOpenModal(false);
     };
-
-    useEffect(() => {
-        handleSearch();
-    }, [searchTerm]);
 
     return (
         <>
@@ -65,8 +71,11 @@ function product() {
                                 className="shadow appearance-none border rounded w-64 py-2 px-3 text-[#739072] leading-tight focus:outline-none focus:shadow-outline focus:ring-[#937af9]"
                                 type="text"
                                 placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value),
+                                    setCurrentPage(1)
+                                }}
                             />
                         </div>
                         <div className="">
@@ -101,7 +110,7 @@ function product() {
                             </tr>
                         </thead>
                         <tbody>
-                            {displayedProducts.map((product, index) => (
+                            {paginatedItems.map((product, index) => (
                                 <tr key={index} className="bg-white border-b">
                                     <th
                                         scope="row"
@@ -116,7 +125,7 @@ function product() {
                                         <Link to={`/edit-product/${product.id}`} className="font-medium text-[#FFA724]">
                                             Edit
                                         </Link>
-                                        <Link to="#" onClick={() => setOpenModal(true)} className="font-medium text-black ml-6">
+                                        <Link to="#" onClick={() => {setOpenModal(true); setTargetId(product.id)}} className="font-medium text-black ml-6">
                                             Delete
                                         </Link>
                                     </td>
@@ -125,7 +134,7 @@ function product() {
                         </tbody>
                     </table>
                     <div className="flex overflow-x-auto sm:justify-center mt-5">
-                        <Pagination currentPage={currentPage} totalPages={Math.ceil(products.length / itemsPerPage)} onPageChange={onPageChange} showIcons className='text-[#739072]' />
+                        <Pagination currentPage={currentPage} totalPages={totalFilteredPages} onPageChange={onPageChange} showIcons className='text-[#739072]' />
                     </div>
                     <Modal show={openModal} size="md" onClose={() => setOpenModal(false)} popup >
                         <Modal.Header />
@@ -139,7 +148,7 @@ function product() {
                                     <Button className='bg-[#E2E8F0] text-black w-[40%]' style={{ backgroundColor: '#E2E8F0' }} onClick={() => setOpenModal(false)}>
                                         Back
                                     </Button>
-                                    <Button className='bg-[#739072] w-[40%]' style={{ backgroundColor: '#739072' }} onClick={() => setOpenModal(false)}>
+                                    <Button className='bg-[#739072] w-[40%]' style={{ backgroundColor: '#739072' }} onClick={handleDelete}>
                                         {"Delete"}
                                     </Button>
                                 </div>

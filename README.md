@@ -41,7 +41,7 @@ pada front end terdapat folder src yang berisi
      d. report-pay merupakan tampilan halaman menu report-pay yang berisi report-pay.jsx
      e. shipment, merupakan tampilan halaman shipment yang berisi shipment.jsx
      f. user, merupakan tampilan halaman user yang berisi add-user.jsx edit-user.jsx dan user.jsx
+   - User, pada pages adalah tampilan halaman user yang berisi beerapa halaman seperti all-product.jsx cart.jsx home.jsx profile.jsx shipping.jsx
      
-   - User
 ## Author
 PWL_Kelompok14_Slaxx
